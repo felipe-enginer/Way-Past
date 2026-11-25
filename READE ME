@@ -1,0 +1,107 @@
+Organizador de Downloads
+Script em Python, 100% offline, que organiza arquivos baixados movendo cada um para a pasta certa com base em palavras-chave no nome.
+
+Status: em desenvolvimento. A normalização de nomes e o formato das regras já estão prontos. A movimentação dos arquivos é a próxima etapa. Veja o andamento.
+Sobre o projeto
+Este projeto visa automatizar a organização de arquivos em cenários com muitos downloads, como currículos adaptados para cada vaga, materiais acadêmicos e arquivos de projetos de design. Nesses casos, a pasta de Downloads rapidamente se torna difícil de manter, e separar tudo manualmente é repetitivo.
+
+A solução traz agilidade e consistência ao processo e é deliberadamente simples e transparente: regras condicionais baseadas no nome do arquivo, sem inteligência artificial. Isso facilita entender por que cada arquivo foi para determinada pasta e ajustar o comportamento quando surge um projeto novo.
+Como funciona
+Percorre a pasta de origem (Downloads).
+Normaliza o nome de cada arquivo: tudo em minúsculo e sem acentos.
+Quebra o nome em palavras, separando por _, -, . e espaço.
+Percorre as regras na ordem. A primeira que casar com alguma palavra do nome define a pasta de destino.
+Se nenhuma regra casar, o arquivo vai para uma pasta de triagem, e a decisão fica para depois.
+Move o arquivo. Se já existir um com o mesmo nome no destino, acrescenta um sufixo (_1, _2, ...).
+Registra tudo em um log.
+Princípios de segurança
+Apenas move arquivos, NUNCA pode apagar.
+Nunca sobrescreve um arquivo que já existe.
+Simulação primeiro (--simular): mostra o que seria movido, sem mover nada.
+O que não casa não some: vai para a “triagem”.
+Por que comparar com palavras inteiras?
+Procurar a palavra-chave "dentro do texto" gera falsos positivos. Uma regra c (para documentação da linguagem C) casaria com qualquer nome que tenha a letra "c", como curriculo. Comparando com as palavras inteiras do nome, c só casa quando é uma palavra própria, e c++ e c# continuam funcionando.
+Regras
+As regras são uma lista ordenada de pares pasta → palavras-chave. A ordem é a prioridade: as regras mais específicas vêm antes das gerais.
+
+{
+  "triagem": "_triagem",
+  "regras": [
+    {"pasta": "FIAP/ProjetoX", "palavras": ["projetox"]},
+    {"pasta": "Curriculos", "palavras": ["curriculo", "cv"]},
+    {"pasta": "Documentacoes", "palavras": ["python", "c++", "c#", "c", "java", "javascript"]},
+    {"pasta": "FIAP", "palavras": ["fiap"]}
+  ]
+}
+
+Os nomes de pasta acima são um exemplo. Quando surge um projeto novo, basta acrescentar uma regra.
+Comportamento esperado com essas regras
+Arquivo
+Destino
+Currículo_FIAP_Versão2.pdf
+Curriculos
+apostila_c++_basico.pdf
+Documentacoes
+fiap_projetox_entrega.pdf
+FIAP/ProjetoX
+Lista_FIAP_01.pdf
+FIAP
+foto_praia.png
+_triagem
+
+
+O arquivo Currículo_FIAP_Versão2.pdf casa com duas regras (curriculo e fiap). Ele vai para Curriculos porque essa regra vem primeiro.
+Andamento
+Normalização de nomes (minúsculo e sem acentos)
+Formato das regras definido (lista ordenada de pasta e palavras-chave)
+Escolha do destino a partir do nome do arquivo
+Leitura das regras de um arquivo regras.json
+Destino livre (sufixo _1, _2 para evitar sobrescrita)
+Movimentação dos arquivos, com modo --simular
+Log das operações
+Testes automatizados
+Interface de linha de comando (argparse)
+Ideias para depois
+Monitorar a pasta automaticamente com a biblioteca watchdog.
+Gerar um executável com o PyInstaller, para rodar sem abrir o terminal.
+Aprendizados
+O desenvolvimento acompanha a leitura da documentação oficial de cada biblioteca. Em uma linha, o essencial de cada uma:
+
+pathlib: representa caminhos como objetos. O projeto usa o Path (concreto), que acessa o disco, e não o PurePath, que só manipula texto.
+unicodedata: o NFD separa a letra do acento, e só depois disso é possível filtrar o acento.
+shutil: o move pode sobrescrever o destino, então é preciso verificar se ele existe antes.
+json: load lê de um arquivo aberto, e loads lê de uma string.
+logging: o nível padrão é WARNING, então as mensagens info só aparecem com o nível configurado.
+Tecnologias usadas
+Python 3, usando só a biblioteca padrão (não há nada para instalar com pip). Desenvolvido e testado com Python 3.14, no Linux.
+
+Módulo
+Uso
+unicodedata
+Remover acentos dos nomes
+pathlib
+Trabalhar com caminhos de arquivos e pastas
+shutil
+Mover os arquivos
+json
+Ler as regras de um arquivo
+logging
+Registrar as operações
+argparse
+Opções de linha de comando
+
+
+Como executar
+Clone o repositório e execute:
+
+python3 organizador.py
+
+No estado atual, o arquivo contém a normalização de nomes e a definição das regras. A organização dos arquivos ainda não está implementada.
+Uso planejado
+python3 organizador.py --simular   # mostra o que seria movido, sem mover
+python3 organizador.py             # move os arquivos de fato
+
+Felipe, estudante de Engenharia de Software (FIAP).
+
+GitHub: https://github.com/felipe-enginer
+LinkedIn: https://www.linkedin.com/in/felipe-lopes-15b518326/
